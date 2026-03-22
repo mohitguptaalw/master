@@ -115,6 +115,54 @@
             color: #333;
             margin-top: 10px;
         }
+        .appliance-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e8e8e8;
+        }
+        .appliance-card .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+        }
+        .appliance-card .checkbox-item {
+            width: 22px;
+            height: 22px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+        .appliance-card .appliance-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .appliance-card .appliance-icon {
+            font-size: 1.3rem;
+        }
+        .appliance-card .appliance-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .appliance-card .detail-row {
+            display: none;
+            gap: 10px;
+            margin-top: 14px;
+            padding-left: 34px;
+        }
+        .appliance-card .detail-row input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
