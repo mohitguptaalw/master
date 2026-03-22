@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Appliance Order Form</title>
+    <title>Meridian Park Bulk Order Form</title>
     <style>
         * {
             margin: 0;
@@ -111,33 +111,40 @@
             color: #333;
             margin-top: 10px;
         }
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
+        .appliance-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .checkbox-item {
+        .appliance-card .header-row {
             display: flex;
             align-items: center;
-            background: white;
-            padding: 12px 15px;
-            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .appliance-card .checkbox-item {
+            margin-right: 10px;
+        }
+        .appliance-card .appliance-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .appliance-card .detail-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .appliance-card .detail-row input {
+            flex: 1;
+            padding: 12px;
             border: 2px solid #e0e0e0;
-            cursor: pointer;
-            transition: all 0.3s;
+            border-radius: 8px;
+            font-size: 0.9rem;
         }
-        .checkbox-item.selected {
+        .appliance-card .detail-row input:focus {
+            outline: none;
             border-color: #667eea;
-            background: #f0edff;
-        }
-        .checkbox-item input {
-            width: 22px;
-            height: 22px;
-            margin-right: 12px;
-            accent-color: #667eea;
-        }
-        .checkbox-item span {
-            font-size: 0.95rem;
         }
         .order-card {
             background: white;
@@ -213,16 +220,6 @@
             from { top: 60px; opacity: 0; }
             to { top: 90px; opacity: 1; }
         }
-        .search-bar {
-            margin-bottom: 15px;
-        }
-        .search-bar input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -241,7 +238,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Appliance Order System</h1>
+        <h1>Meridian Park Bulk Order Form</h1>
         <p style="font-size: 0.85rem; opacity: 0.9;">Mobile Order Management</p>
     </div>
 
@@ -274,13 +271,7 @@
 
             <div class="form-group">
                 <label>Select Appliances *</label>
-                <div class="checkbox-group" id="applianceCheckboxes">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Additional Details / Notes</label>
-                <textarea id="additionalDetails" placeholder="Any specific requirements, measurements, or comments..."></textarea>
+                <div id="applianceCards"></div>
             </div>
 
             <button type="submit" class="btn btn-primary">Submit Order</button>
@@ -290,17 +281,15 @@
 
     <div id="report" class="tab-content">
         <div class="action-buttons">
-            <button class="btn btn-primary" onclick="exportToExcel()">Export CSV</button>
-            <button class="btn btn-danger" onclick="clearAllOrders()">Clear All</button>
-        </div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by name, flat, or mobile..." oninput="filterOrders()">
+            <button class="btn btn-primary" onclick="exportToExcel()">Export Excel</button>
+            <button class="btn btn-danger" onclick="clearAllOrders()">Clear My Orders</button>
         </div>
         <div id="ordersList"></div>
     </div>
 
     <div class="success-toast" id="toast">Order saved successfully!</div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         const appliances = [
             'Windows Grill',
@@ -315,32 +304,33 @@
         ];
 
         function loadOrders() {
-            const orders = localStorage.getItem('applianceOrders');
+            const orders = localStorage.getItem('meridianOrders');
             return orders ? JSON.parse(orders) : [];
         }
 
         function saveOrders(orders) {
-            localStorage.setItem('applianceOrders', JSON.stringify(orders));
+            localStorage.setItem('meridianOrders', JSON.stringify(orders));
         }
 
         function initAppliances() {
-            const container = document.getElementById('applianceCheckboxes');
+            const container = document.getElementById('applianceCards');
             appliances.forEach(app => {
                 const div = document.createElement('div');
-                div.className = 'checkbox-item';
+                div.className = 'appliance-card';
                 div.innerHTML = `
-                    <input type="checkbox" value="${app}" id="${app.replace(/\s+/g, '')}">
-                    <span>${app}</span>
+                    <div class="header-row">
+                        <input type="checkbox" value="${app}" id="${app.replace(/\s+/g, '')}" class="checkbox-item">
+                        <span class="appliance-name">${app}</span>
+                    </div>
+                    <div class="detail-row" style="display: none;">
+                        <input type="number" placeholder="Qty" min="1" value="1" class="qty-input">
+                        <input type="text" placeholder="Brand / Model / Details" class="brand-input">
+                    </div>
                 `;
-                div.onclick = (e) => {
-                    if (e.target.tagName !== 'INPUT') {
-                        const checkbox = div.querySelector('input');
-                        checkbox.checked = !checkbox.checked;
-                    }
-                    div.classList.toggle('selected', div.querySelector('input').checked);
-                };
-                div.querySelector('input').addEventListener('change', () => {
-                    div.classList.toggle('selected', div.querySelector('input').checked);
+                const checkbox = div.querySelector('input[type="checkbox"]');
+                const detailRow = div.querySelector('.detail-row');
+                checkbox.addEventListener('change', () => {
+                    detailRow.style.display = checkbox.checked ? 'flex' : 'none';
                 });
                 container.appendChild(div);
             });
@@ -362,8 +352,21 @@
         }
 
         function getSelectedAppliances() {
-            const checked = document.querySelectorAll('#applianceCheckboxes input:checked');
-            return Array.from(checked).map(cb => cb.value);
+            const cards = document.querySelectorAll('.appliance-card');
+            const selected = [];
+            cards.forEach(card => {
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox.checked) {
+                    const qty = card.querySelector('.qty-input').value || 1;
+                    const brand = card.querySelector('.brand-input').value || 'Not specified';
+                    selected.push({
+                        name: checkbox.value,
+                        qty: qty,
+                        brand: brand
+                    });
+                }
+            });
+            return selected;
         }
 
         document.getElementById('orderForm').addEventListener('submit', (e) => {
@@ -383,7 +386,6 @@
                 mobile: document.getElementById('mobile').value,
                 procurementDate: document.getElementById('procurementDate').value || 'Not specified',
                 appliances: selectedAppliances,
-                additionalDetails: document.getElementById('additionalDetails').value || 'None',
                 date: now.toLocaleDateString(),
                 time: now.toLocaleTimeString()
             };
@@ -394,7 +396,12 @@
 
             showToast('Order saved successfully!');
             document.getElementById('orderForm').reset();
-            document.querySelectorAll('.checkbox-item').forEach(div => div.classList.remove('selected'));
+            document.querySelectorAll('.appliance-card').forEach(card => {
+                card.querySelector('input[type="checkbox"]').checked = false;
+                card.querySelector('.detail-row').style.display = 'none';
+                card.querySelector('.qty-input').value = 1;
+                card.querySelector('.brand-input').value = '';
+            });
         });
 
         function displayOrders(orders) {
@@ -405,7 +412,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <p>No orders found</p>
+                        <p>No orders found. Add a new order and it will appear here.</p>
                     </div>
                 `;
                 return;
@@ -420,27 +427,19 @@
                     <div class="detail"><span class="detail-label">Flat:</span> ${order.flatNumber}</div>
                     <div class="detail"><span class="detail-label">Mobile:</span> ${order.mobile}</div>
                     <div class="detail"><span class="detail-label">Procurement:</span> ${order.procurementDate}</div>
-                    ${order.additionalDetails && order.additionalDetails !== 'None' ? `<div class="detail"><span class="detail-label">Notes:</span> ${order.additionalDetails}</div>` : ''}
                     <div class="appliances-list">
-                        ${(order.appliances || []).map(a => `<span class="appliance-tag">${a}</span>`).join('')}
+                        ${(order.appliances || []).map(a => `<span class="appliance-tag">${a.name} (${a.qty}) - ${a.brand}</span>`).join('')}
                     </div>
                 </div>
             `).join('');
         }
 
-        function filterOrders() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const orders = loadOrders();
-            if (!query) {
-                displayOrders(orders);
-                return;
+        function clearAllOrders() {
+            if (confirm('Are you sure you want to delete all orders? This cannot be undone.')) {
+                localStorage.removeItem('meridianOrders');
+                displayOrders([]);
+                showToast('All orders cleared!');
             }
-            const filtered = orders.filter(order => 
-                (order.name && order.name.toLowerCase().includes(query)) ||
-                (order.flatNumber && order.flatNumber.toLowerCase().includes(query)) ||
-                (order.mobile && order.mobile.includes(query))
-            );
-            displayOrders(filtered);
         }
 
         function exportToExcel() {
@@ -449,27 +448,58 @@
                 alert('No orders to export');
                 return;
             }
-            
-            let csv = 'Date,Time,Name,Flat Number,Mobile,Procurement Date,Appliances,Additional Details\n';
-            orders.forEach(order => {
-                csv += `"${order.date}","${order.time}","${order.name}","${order.flatNumber}","${order.mobile}","${order.procurementDate}","${order.appliances.join(', ')}","${order.additionalDetails}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'orders_' + new Date().toISOString().split('T')[0] + '.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
 
-        function clearAllOrders() {
-            if (confirm('Are you sure you want to delete all orders? This cannot be undone.')) {
-                localStorage.removeItem('applianceOrders');
-                displayOrders([]);
-                showToast('All orders cleared!');
-            }
+            const wb = XLSX.utils.book_new();
+
+            const allOrdersData = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Appliance', 'Qty', 'Brand']];
+            const applianceSheets = {};
+            
+            appliances.forEach(app => {
+                applianceSheets[app] = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Qty', 'Brand']];
+            });
+
+            orders.forEach(order => {
+                order.appliances.forEach(app => {
+                    allOrdersData.push([
+                        order.date,
+                        order.time,
+                        order.name,
+                        order.flatNumber,
+                        order.mobile,
+                        order.procurementDate,
+                        app.name,
+                        app.qty,
+                        app.brand
+                    ]);
+
+                    if (applianceSheets[app.name]) {
+                        applianceSheets[app.name].push([
+                            order.date,
+                            order.time,
+                            order.name,
+                            order.flatNumber,
+                            order.mobile,
+                            order.procurementDate,
+                            app.qty,
+                            app.brand
+                        ]);
+                    }
+                });
+            });
+
+            const allOrdersSheet = XLSX.utils.aoa_to_sheet(allOrdersData);
+            XLSX.utils.book_append_sheet(wb, allOrdersSheet, 'All Orders');
+
+            appliances.forEach(app => {
+                if (applianceSheets[app].length > 1) {
+                    const sheet = XLSX.utils.aoa_to_sheet(applianceSheets[app]);
+                    const sheetName = app.length > 30 ? app.substring(0, 30) : app;
+                    XLSX.utils.book_append_sheet(wb, sheet, sheetName);
+                }
+            });
+
+            const fileName = 'Meridian_Orders_' + new Date().toISOString().split('T')[0] + '.xlsx';
+            XLSX.writeFile(wb, fileName);
         }
 
         initAppliances();
