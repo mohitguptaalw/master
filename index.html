@@ -163,6 +163,18 @@
             border-radius: 8px;
             font-size: 0.9rem;
         }
+        #toast {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -220,7 +232,7 @@
         <div id="ordersList"></div>
     </div>
 
-    <div class="success-toast" id="toast">Order saved successfully!</div>
+    <div id="toast"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
@@ -352,12 +364,7 @@
             const container = document.getElementById('ordersList');
             if (orders.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <p>No orders found. Add a new order and it will appear here.</p>
-                    </div>
+                    <p style="text-align: center; color: #888; padding: 40px;">No orders found. Add a new order and it will appear here.</p>
                 `;
                 return;
             }
