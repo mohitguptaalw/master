@@ -236,7 +236,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        const appliances = [
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
             { name: 'Windows Grill', icon: '🪟' },
             { name: 'Windows Mesh', icon: '🔲' },
             { name: 'Bathroom Glass Separator', icon: '🚿' },
@@ -349,6 +349,11 @@
             orders.push(orderData);
             saveOrders(orders);
 
+            fetch(GOOGLE_SHEET_URL, {
+                method: 'POST',
+                body: JSON.stringify(orderData)
+            }).catch(() => {});
+
             showToast('Order saved successfully!');
             document.getElementById('orderForm').reset();
             document.querySelectorAll('.appliance-card').forEach(card => {
@@ -394,63 +399,75 @@
         }
 
         function exportToExcel() {
-            const orders = loadOrders();
-            if (orders.length === 0) {
-                alert('No orders to export');
-                return;
-            }
-
-            const wb = XLSX.utils.book_new();
-
-            const allOrdersData = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Appliance', 'Qty', 'Brand']];
-            const applianceSheets = {};
+            document.getElementById('selectionCount').textContent = 'Loading...';
             
-            appliances.forEach(app => {
-                applianceSheets[app.name] = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Qty', 'Brand']];
-            });
-
-            orders.forEach(order => {
-                order.appliances.forEach(app => {
-                    allOrdersData.push([
-                        order.date,
-                        order.time,
-                        order.name,
-                        order.flatNumber,
-                        order.mobile,
-                        order.procurementDate,
-                        app.name,
-                        app.qty,
-                        app.brand
-                    ]);
-
-                    if (applianceSheets[app.name]) {
-                        applianceSheets[app.name].push([
-                            order.date,
-                            order.time,
-                            order.name,
-                            order.flatNumber,
-                            order.mobile,
-                            order.procurementDate,
-                            app.qty,
-                            app.brand
-                        ]);
+            fetch(GOOGLE_SHEET_URL)
+                .then(res => res.json())
+                .then(orders => {
+                    if (!orders || orders.length === 0) {
+                        alert('No orders found');
+                        document.getElementById('selectionCount').textContent = '0';
+                        return;
                     }
+
+                    const wb = XLSX.utils.book_new();
+
+                    const allOrdersData = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Appliance', 'Qty', 'Brand']];
+                    const applianceSheets = {};
+                    
+                    appliances.forEach(app => {
+                        applianceSheets[app.name] = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Qty', 'Brand']];
+                    });
+
+                    orders.forEach(order => {
+                        if (order.Appliance) {
+                            allOrdersData.push([
+                                order.Date || '',
+                                order.Time || '',
+                                order.Name || '',
+                                order['Flat Number'] || '',
+                                order.Mobile || '',
+                                order['Procurement Date'] || '',
+                                order.Appliance || '',
+                                order.Qty || '',
+                                order.Brand || ''
+                            ]);
+
+                            if (applianceSheets[order.Appliance]) {
+                                applianceSheets[order.Appliance].push([
+                                    order.Date || '',
+                                    order.Time || '',
+                                    order.Name || '',
+                                    order['Flat Number'] || '',
+                                    order.Mobile || '',
+                                    order['Procurement Date'] || '',
+                                    order.Qty || '',
+                                    order.Brand || ''
+                                ]);
+                            }
+                        }
+                    });
+
+                    const allOrdersSheet = XLSX.utils.aoa_to_sheet(allOrdersData);
+                    XLSX.utils.book_append_sheet(wb, allOrdersSheet, 'All Orders');
+
+                    appliances.forEach(app => {
+                        if (applianceSheets[app.name].length > 1) {
+                            const sheet = XLSX.utils.aoa_to_sheet(applianceSheets[app.name]);
+                            const sheetName = app.name.length > 30 ? app.name.substring(0, 30) : app.name;
+                            XLSX.utils.book_append_sheet(wb, sheet, sheetName);
+                        }
+                    });
+
+                    const fileName = 'Meridian_Orders_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                    XLSX.writeFile(wb, fileName);
+                    updateSummary();
+                })
+                .catch(() => {
+                    alert('Error loading orders from Google Sheet');
+                    updateSummary();
                 });
-            });
-
-            const allOrdersSheet = XLSX.utils.aoa_to_sheet(allOrdersData);
-            XLSX.utils.book_append_sheet(wb, allOrdersSheet, 'All Orders');
-
-            appliances.forEach(app => {
-                if (applianceSheets[app.name].length > 1) {
-                    const sheet = XLSX.utils.aoa_to_sheet(applianceSheets[app.name]);
-                    const sheetName = app.name.length > 30 ? app.name.substring(0, 30) : app.name;
-                    XLSX.utils.book_append_sheet(wb, sheet, sheetName);
-                }
-            });
-
-            const fileName = 'Meridian_Orders_' + new Date().toISOString().split('T')[0] + '.xlsx';
-            XLSX.writeFile(wb, fileName);
+        }
         }
 
         initAppliances();
