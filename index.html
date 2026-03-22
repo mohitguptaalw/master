@@ -224,7 +224,7 @@
                 const checkbox = div.querySelector('input[type="checkbox"]');
                 const detailRow = div.querySelector('.detail-row');
                 checkbox.addEventListener('change', () => {
-                    detailRow.classList.toggle('show', checkbox.checked);
+                    detailRow.style.display = checkbox.checked ? 'flex' : 'none';
                     updateSummary();
                 });
                 container.appendChild(div);
