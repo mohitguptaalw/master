@@ -227,7 +227,6 @@
     <div id="report" class="tab-content">
         <div class="action-buttons">
             <button class="btn btn-primary" onclick="exportToExcel()">Export Excel</button>
-            <button class="btn btn-danger" onclick="clearAllOrders()">Clear My Orders</button>
         </div>
         <div id="ordersList"></div>
     </div>
@@ -299,8 +298,7 @@
             event.target.classList.add('active');
             document.getElementById(tabName).classList.add('active');
             if (tabName === 'report') {
-                document.getElementById('ordersList').innerHTML = '<p style="text-align: center; color: #888; padding: 40px;">Loading...</p>';
-                loadOrdersFromSheet().then(orders => displayOrders(orders));
+                document.getElementById('ordersList').innerHTML = '';
             }
         }
 
