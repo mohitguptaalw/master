@@ -324,9 +324,10 @@
             appliances.forEach(app => {
                 const div = document.createElement('div');
                 div.className = 'appliance-card';
+                div.style.textAlign = 'left';
                 div.innerHTML = `
-                    <div class="header-row">
-                        <input type="checkbox" value="${app}" id="${app.replace(/\s+/g, '')}" class="checkbox-item">
+                    <div class="header-row" style="justify-content: flex-start;">
+                        <input type="checkbox" value="${app}" id="${app.replace(/\s+/g, '')}" class="checkbox-item" style="margin-left: 0;">
                         <span class="appliance-name">${app}</span>
                     </div>
                     <div class="detail-row" style="display: none;">
