@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Appliance Order Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+        .tabs {
+            display: flex;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 76px;
+            z-index: 99;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px 15px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            background: white;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            margin-top: 10px;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .checkbox-item.selected {
+            border-color: #667eea;
+            background: #f0edff;
+        }
+        .checkbox-item input {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            accent-color: #667eea;
+        }
+        .checkbox-item span {
+            font-size: 0.95rem;
+        }
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .order-card .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .order-card .name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .order-card .date {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .order-card .detail {
+            display: flex;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .order-card .detail-label {
+            font-weight: 600;
+            color: #555;
+            width: 100px;
+        }
+        .order-card .appliances-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .order-card .appliance-tag {
+            background: #f0edff;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        .success-toast {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { top: 60px; opacity: 0; }
+            to { top: 90px; opacity: 1; }
+        }
+        .search-bar {
+            margin-bottom: 15px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .action-buttons .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Appliance Order System</h1>
+        <p style="font-size: 0.85rem; opacity: 0.9;">Mobile Order Management</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('entry')">New Order</div>
+        <div class="tab" onclick="switchTab('report')">View Report</div>
+    </div>
+
+    <div id="entry" class="tab-content active">
+        <form id="orderForm">
+            <div class="form-group">
+                <label>Customer Name *</label>
+                <input type="text" id="name" required placeholder="Enter full name">
+            </div>
+
+            <div class="form-group">
+                <label>Flat Number *</label>
+                <input type="text" id="flatNumber" required placeholder="e.g., A-101, B-205">
+            </div>
+
+            <div class="form-group">
+                <label>Mobile Number *</label>
+                <input type="tel" id="mobile" required placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}">
+            </div>
+
+            <div class="form-group">
+                <label>Tentative Procurement Date</label>
+                <input type="date" id="procurementDate">
+            </div>
+
+            <div class="form-group">
+                <label>Select Appliances *</label>
+                <div class="checkbox-group" id="applianceCheckboxes">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Additional Details / Notes</label>
+                <textarea id="additionalDetails" placeholder="Any specific requirements, measurements, or comments..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Order</button>
+            <button type="reset" class="btn btn-secondary">Clear Form</button>
+        </form>
+    </div>
+
+    <div id="report" class="tab-content">
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="exportToExcel()">Export CSV</button>
+            <button class="btn btn-danger" onclick="clearAllOrders()">Clear All</button>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search by name, flat, or mobile..." oninput="filterOrders()">
+        </div>
+        <div id="ordersList"></div>
+    </div>
+
+    <div class="success-toast" id="toast">Order saved successfully!</div>
+
+    <script>
+        const appliances = [
+            'Windows Grill',
+            'Windows Mesh',
+            'Bathroom Glass Separator',
+            'Electronic & Kitchen Appliances',
+            'Water RO',
+            'Furniture',
+            'Electric Lights',
+            'Third Party Site Inspection',
+            'Tiles & Counter Top'
+        ];
+
+        function loadOrders() {
+            const orders = localStorage.getItem('applianceOrders');
+            return orders ? JSON.parse(orders) : [];
+        }
+
+        function saveOrders(orders) {
+            localStorage.setItem('applianceOrders', JSON.stringify(orders));
+        }
+
+        function initAppliances() {
+            const container = document.getElementById('applianceCheckboxes');
+            appliances.forEach(app => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                div.innerHTML = `
+                    <input type="checkbox" value="${app}" id="${app.replace(/\s+/g, '')}">
+                    <span>${app}</span>
+                `;
+                div.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = div.querySelector('input');
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    div.classList.toggle('selected', div.querySelector('input').checked);
+                };
+                div.querySelector('input').addEventListener('change', () => {
+                    div.classList.toggle('selected', div.querySelector('input').checked);
+                });
+                container.appendChild(div);
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            if (tabName === 'report') displayOrders(loadOrders());
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        function getSelectedAppliances() {
+            const checked = document.querySelectorAll('#applianceCheckboxes input:checked');
+            return Array.from(checked).map(cb => cb.value);
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const selectedAppliances = getSelectedAppliances();
+            if (selectedAppliances.length === 0) {
+                alert('Please select at least one appliance');
+                return;
+            }
+
+            const now = new Date();
+            const orderData = {
+                id: Date.now(),
+                name: document.getElementById('name').value,
+                flatNumber: document.getElementById('flatNumber').value,
+                mobile: document.getElementById('mobile').value,
+                procurementDate: document.getElementById('procurementDate').value || 'Not specified',
+                appliances: selectedAppliances,
+                additionalDetails: document.getElementById('additionalDetails').value || 'None',
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString()
+            };
+
+            const orders = loadOrders();
+            orders.push(orderData);
+            saveOrders(orders);
+
+            showToast('Order saved successfully!');
+            document.getElementById('orderForm').reset();
+            document.querySelectorAll('.checkbox-item').forEach(div => div.classList.remove('selected'));
+        });
+
+        function displayOrders(orders) {
+            const container = document.getElementById('ordersList');
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>No orders found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = orders.reverse().map(order => `
+                <div class="order-card">
+                    <div class="header-row">
+                        <span class="name">${order.name}</span>
+                        <span class="date">${order.date} ${order.time}</span>
+                    </div>
+                    <div class="detail"><span class="detail-label">Flat:</span> ${order.flatNumber}</div>
+                    <div class="detail"><span class="detail-label">Mobile:</span> ${order.mobile}</div>
+                    <div class="detail"><span class="detail-label">Procurement:</span> ${order.procurementDate}</div>
+                    ${order.additionalDetails && order.additionalDetails !== 'None' ? `<div class="detail"><span class="detail-label">Notes:</span> ${order.additionalDetails}</div>` : ''}
+                    <div class="appliances-list">
+                        ${(order.appliances || []).map(a => `<span class="appliance-tag">${a}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterOrders() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const orders = loadOrders();
+            if (!query) {
+                displayOrders(orders);
+                return;
+            }
+            const filtered = orders.filter(order => 
+                (order.name && order.name.toLowerCase().includes(query)) ||
+                (order.flatNumber && order.flatNumber.toLowerCase().includes(query)) ||
+                (order.mobile && order.mobile.includes(query))
+            );
+            displayOrders(filtered);
+        }
+
+        function exportToExcel() {
+            const orders = loadOrders();
+            if (orders.length === 0) {
+                alert('No orders to export');
+                return;
+            }
+            
+            let csv = 'Date,Time,Name,Flat Number,Mobile,Procurement Date,Appliances,Additional Details\n';
+            orders.forEach(order => {
+                csv += `"${order.date}","${order.time}","${order.name}","${order.flatNumber}","${order.mobile}","${order.procurementDate}","${order.appliances.join(', ')}","${order.additionalDetails}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'orders_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllOrders() {
+            if (confirm('Are you sure you want to delete all orders? This cannot be undone.')) {
+                localStorage.removeItem('applianceOrders');
+                displayOrders([]);
+                showToast('All orders cleared!');
+            }
+        }
+
+        initAppliances();
+    </script>
+</body>
+</html>
