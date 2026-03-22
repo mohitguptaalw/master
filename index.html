@@ -237,6 +237,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbybL0H8OEiJhby5AlZoR9dV8ZXUa_2iviQr4mPGlws8Pg9I7TS6KdUag9bp7nhyqEKFhA/exec';
+        
+        const appliances = [
             { name: 'Windows Grill', icon: '🪟' },
             { name: 'Windows Mesh', icon: '🔲' },
             { name: 'Bathroom Glass Separator', icon: '🚿' },
@@ -296,7 +298,10 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tabName).classList.add('active');
-            if (tabName === 'report') displayOrders(loadOrders());
+            if (tabName === 'report') {
+                document.getElementById('ordersList').innerHTML = '<p style="text-align: center; color: #888; padding: 40px;">Loading...</p>';
+                loadOrdersFromSheet().then(orders => displayOrders(orders));
+            }
         }
 
         function showToast(message) {
@@ -367,7 +372,7 @@
 
         function displayOrders(orders) {
             const container = document.getElementById('ordersList');
-            if (orders.length === 0) {
+            if (!orders || orders.length === 0) {
                 container.innerHTML = `
                     <p style="text-align: center; color: #888; padding: 40px;">No orders found. Add a new order and it will appear here.</p>
                 `;
@@ -377,17 +382,23 @@
             container.innerHTML = orders.reverse().map(order => `
                 <div class="order-card">
                     <div class="header-row">
-                        <span class="name">${order.name}</span>
-                        <span class="date">${order.date} ${order.time}</span>
+                        <span class="name">${order.Name || order.name}</span>
+                        <span class="date">${order.Date || ''} ${order.Time || ''}</span>
                     </div>
-                    <div class="detail"><span class="detail-label">Flat:</span> ${order.flatNumber}</div>
-                    <div class="detail"><span class="detail-label">Mobile:</span> ${order.mobile}</div>
-                    <div class="detail"><span class="detail-label">Procurement:</span> ${order.procurementDate}</div>
+                    <div class="detail"><span class="detail-label">Flat:</span> ${order['Flat Number'] || order.flatNumber}</div>
+                    <div class="detail"><span class="detail-label">Mobile:</span> ${order.Mobile || order.mobile}</div>
+                    <div class="detail"><span class="detail-label">Procurement:</span> ${order['Procurement Date'] || order.procurementDate || 'N/A'}</div>
                     <div class="appliances-list">
-                        ${(order.appliances || []).map(a => `<span class="appliance-tag">${a.name} (${a.qty}) - ${a.brand}</span>`).join('')}
+                        <span class="appliance-tag">${order.Appliance} (${order.Qty || 1}) - ${order.Brand || 'N/A'}</span>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function loadOrdersFromSheet() {
+            return fetch(GOOGLE_SHEET_URL)
+                .then(res => res.json())
+                .catch(() => []);
         }
 
         function clearAllOrders() {
