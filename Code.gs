@@ -7,9 +7,8 @@
 // 5. Select "Web app"
 // 6. Set: Execute as: "Me", Who has access: "Anyone"
 // 7. Click Deploy and copy the URL
-// 
-// SPREADSHEET ID: 1puZrDZxNP8X2hd_vwicvmyX3AYNdDuQA3saRuUMGEvo
 
+const SPREADSHEET_ID = '1puZrDZxNP8X2hd_vwicvmyX3AYNdDuQA3saRuUMGEvo';
 const SHEET_NAME = 'Meridian Park Bulk Order Form';
 
 function doPost(e) {

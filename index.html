@@ -356,7 +356,8 @@
 
             fetch(GOOGLE_SHEET_URL, {
                 method: 'POST',
-                body: JSON.stringify(orderData)
+                body: JSON.stringify(orderData),
+                redirect: 'follow'
             }).catch(() => {});
 
             showToast('Order saved successfully!');
@@ -396,7 +397,7 @@
         }
 
         function loadOrdersFromSheet() {
-            return fetch(GOOGLE_SHEET_URL)
+            return fetch(GOOGLE_SHEET_URL, { redirect: 'follow' })
                 .then(res => res.json())
                 .catch(() => []);
         }
@@ -412,7 +413,7 @@
         function exportToExcel() {
             document.getElementById('selectionCount').textContent = 'Loading...';
             
-            fetch(GOOGLE_SHEET_URL)
+            fetch(GOOGLE_SHEET_URL, { redirect: 'follow' })
                 .then(res => res.json())
                 .then(orders => {
                     if (!orders || orders.length === 0) {
@@ -474,8 +475,9 @@
                     XLSX.writeFile(wb, fileName);
                     updateSummary();
                 })
-                .catch(() => {
-                    alert('Error loading orders from Google Sheet');
+                .catch((err) => {
+                    console.error(err);
+                    alert('Error loading orders from Google Sheet. Please check if the sheet is accessible.');
                     updateSummary();
                 });
         }
