@@ -110,180 +110,10 @@
         .btn-primary:active {
             transform: scale(0.98);
         }
-        .btn-secondary {
+.btn-secondary {
             background: #e0e0e0;
             color: #333;
             margin-top: 10px;
-        }
-        .btn-whatsapp {
-            background: #25D366;
-            color: white;
-            margin-top: 10px;
-        }
-        .btn-whatsapp:active {
-            transform: scale(0.98);
-        }
-        .appliance-card {
-            background: white;
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            border: 1px solid #e8e8e8;
-            text-align: left;
-        }
-        .appliance-card .header-row {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 12px;
-        }
-        .appliance-card .checkbox-item {
-            width: 22px;
-            height: 22px;
-            margin: 0;
-            cursor: pointer;
-            accent-color: #667eea;
-        }
-        .appliance-card .appliance-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            flex: 1;
-        }
-        .appliance-card .appliance-icon {
-            font-size: 1.3rem;
-        }
-        .appliance-card .appliance-name {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #333;
-        }
-        .appliance-card .detail-row {
-            display: none;
-            gap: 10px;
-            margin-top: 14px;
-            padding-left: 34px;
-        }
-        .appliance-card .detail-row.show {
-            display: flex;
-        }
-        .appliance-card .detail-row input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-        .appliance-card .detail-row input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .selection-summary {
-            background: linear-gradient(135deg, #f0f4ff 0%, #e8f4e8 100%);
-            border: 2px solid #667eea;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        .selection-summary .count {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-        }
-        .selection-summary .text {
-            font-size: 0.9rem;
-            color: #555;
-        }
-        .order-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .order-card .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .order-card .name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #333;
-        }
-        .order-card .date {
-            font-size: 0.8rem;
-            color: #888;
-        }
-        .order-card .detail {
-            display: flex;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        .order-card .detail-label {
-            font-weight: 600;
-            color: #555;
-            width: 100px;
-        }
-        .order-card .appliances-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .order-card .appliance-tag {
-            background: #f0edff;
-            color: #667eea;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-        .success-toast {
-            position: fixed;
-            top: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #4CAF50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            z-index: 1000;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-        @keyframes slideDown {
-            from { top: 60px; opacity: 0; }
-            to { top: 90px; opacity: 1; }
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .action-buttons .btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 0.9rem;
-        }
-        .btn-danger {
-            background: #ff4444;
-            color: white;
         }
     </style>
 </head>
@@ -331,7 +161,6 @@
             </div>
 
             <button type="submit" class="btn btn-primary">Submit Order</button>
-            <button type="button" class="btn btn-whatsapp" onclick="shareWhatsApp()">Share via WhatsApp</button>
             <button type="reset" class="btn btn-secondary">Clear Form</button>
         </form>
     </div>
@@ -434,38 +263,6 @@
                 }
             });
             return selected;
-        }
-
-        function shareWhatsApp() {
-            const name = document.getElementById('name').value;
-            const flatNumber = document.getElementById('flatNumber').value;
-            const mobile = document.getElementById('mobile').value;
-            const procurementDate = document.getElementById('procurementDate').value || 'Not specified';
-            const selectedAppliances = getSelectedAppliances();
-
-            if (!name || !flatNumber || !mobile) {
-                alert('Please fill in your name, flat number, and mobile number');
-                return;
-            }
-
-            if (selectedAppliances.length === 0) {
-                alert('Please select at least one appliance');
-                return;
-            }
-
-            let message = `*Meridian Park Bulk Order Form*\n\n`;
-            message += `*Customer Details*\n`;
-            message += `Name: ${name}\n`;
-            message += `Flat: ${flatNumber}\n`;
-            message += `Mobile: ${mobile}\n`;
-            message += `Procurement Date: ${procurementDate}\n\n`;
-            message += `*Selected Appliances*\n`;
-            selectedAppliances.forEach(app => {
-                message += `• ${app.name} - Qty: ${app.qty}, Brand: ${app.brand}\n`;
-            });
-
-            const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
         }
 
         document.getElementById('orderForm').addEventListener('submit', (e) => {
