@@ -115,36 +115,59 @@
             color: #333;
             margin-top: 10px;
         }
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            margin-top: 10px;
+        }
+        .btn-whatsapp:active {
+            transform: scale(0.98);
+        }
         .appliance-card {
             background: white;
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 14px;
+            padding: 16px;
             margin-bottom: 12px;
-            margin-left: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e8e8e8;
             text-align: left;
         }
         .appliance-card .header-row {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: flex-start;
-            margin-bottom: 12px;
-            text-align: left;
+            gap: 12px;
         }
         .appliance-card .checkbox-item {
-            margin-right: 10px;
-            margin-top: 2px;
+            width: 22px;
+            height: 22px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+        .appliance-card .appliance-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            flex: 1;
+        }
+        .appliance-card .appliance-icon {
+            font-size: 1.3rem;
         }
         .appliance-card .appliance-name {
             font-weight: 600;
             font-size: 1rem;
+            color: #333;
         }
         .appliance-card .detail-row {
-            display: flex;
+            display: none;
             gap: 10px;
-            margin-top: 10px;
-            justify-content: flex-start;
-            padding-left: 32px;
+            margin-top: 14px;
+            padding-left: 34px;
+        }
+        .appliance-card .detail-row.show {
+            display: flex;
         }
         .appliance-card .detail-row input {
             flex: 1;
@@ -156,6 +179,23 @@
         .appliance-card .detail-row input:focus {
             outline: none;
             border-color: #667eea;
+        }
+        .selection-summary {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f4e8 100%);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .selection-summary .count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .selection-summary .text {
+            font-size: 0.9rem;
+            color: #555;
         }
         .order-card {
             background: white;
@@ -285,7 +325,13 @@
                 <div id="applianceCards"></div>
             </div>
 
+            <div class="selection-summary">
+                <span class="count" id="selectionCount">0</span>
+                <span class="text"> items selected</span>
+            </div>
+
             <button type="submit" class="btn btn-primary">Submit Order</button>
+            <button type="button" class="btn btn-whatsapp" onclick="shareWhatsApp()">Share via WhatsApp</button>
             <button type="reset" class="btn btn-secondary">Clear Form</button>
         </form>
     </div>
@@ -303,15 +349,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         const appliances = [
-            'Windows Grill',
-            'Windows Mesh',
-            'Bathroom Glass Separator',
-            'Electronic & Kitchen Appliances',
-            'Water RO',
-            'Furniture',
-            'Electric Lights',
-            'Third Party Site Inspection',
-            'Tiles & Counter Top'
+            { name: 'Windows Grill', icon: '🪟' },
+            { name: 'Windows Mesh', icon: '🔲' },
+            { name: 'Bathroom Glass Separator', icon: '🚿' },
+            { name: 'Electronic & Kitchen Appliances', icon: '🔌' },
+            { name: 'Water RO', icon: '💧' },
+            { name: 'Furniture', icon: '🛋️' },
+            { name: 'Electric Lights', icon: '💡' },
+            { name: 'Third Party Site Inspection', icon: '🔍' },
+            { name: 'Tiles & Counter Top', icon: '🏠' }
         ];
 
         function loadOrders() {
@@ -323,18 +369,26 @@
             localStorage.setItem('meridianOrders', JSON.stringify(orders));
         }
 
+        function updateSummary() {
+            const checked = document.querySelectorAll('.appliance-card input[type="checkbox"]:checked');
+            document.getElementById('selectionCount').textContent = checked.length;
+        }
+
         function initAppliances() {
             const container = document.getElementById('applianceCards');
-            appliances.forEach(app => {
+            appliances.forEach((app, index) => {
                 const div = document.createElement('div');
                 div.className = 'appliance-card';
-                div.style.textAlign = 'left';
+                const safeId = app.name.replace(/\s+/g, '') + index;
                 div.innerHTML = `
-                    <div class="header-row" style="justify-content: flex-start;">
-                        <input type="checkbox" value="${app}" id="${app.replace(/\s+/g, '')}" class="checkbox-item" style="margin-left: 0;">
-                        <span class="appliance-name">${app}</span>
+                    <div class="header-row">
+                        <input type="checkbox" value="${app.name}" id="${safeId}" class="checkbox-item">
+                        <label for="${safeId}" class="appliance-label">
+                            <span class="appliance-icon">${app.icon}</span>
+                            <span class="appliance-name">${app.name}</span>
+                        </label>
                     </div>
-                    <div class="detail-row" style="display: none;">
+                    <div class="detail-row">
                         <input type="number" placeholder="Qty" min="1" value="1" class="qty-input">
                         <input type="text" placeholder="Brand / Model / Details" class="brand-input">
                     </div>
@@ -342,7 +396,8 @@
                 const checkbox = div.querySelector('input[type="checkbox"]');
                 const detailRow = div.querySelector('.detail-row');
                 checkbox.addEventListener('change', () => {
-                    detailRow.style.display = checkbox.checked ? 'flex' : 'none';
+                    detailRow.classList.toggle('show', checkbox.checked);
+                    updateSummary();
                 });
                 container.appendChild(div);
             });
@@ -381,6 +436,38 @@
             return selected;
         }
 
+        function shareWhatsApp() {
+            const name = document.getElementById('name').value;
+            const flatNumber = document.getElementById('flatNumber').value;
+            const mobile = document.getElementById('mobile').value;
+            const procurementDate = document.getElementById('procurementDate').value || 'Not specified';
+            const selectedAppliances = getSelectedAppliances();
+
+            if (!name || !flatNumber || !mobile) {
+                alert('Please fill in your name, flat number, and mobile number');
+                return;
+            }
+
+            if (selectedAppliances.length === 0) {
+                alert('Please select at least one appliance');
+                return;
+            }
+
+            let message = `*Meridian Park Bulk Order Form*\n\n`;
+            message += `*Customer Details*\n`;
+            message += `Name: ${name}\n`;
+            message += `Flat: ${flatNumber}\n`;
+            message += `Mobile: ${mobile}\n`;
+            message += `Procurement Date: ${procurementDate}\n\n`;
+            message += `*Selected Appliances*\n`;
+            selectedAppliances.forEach(app => {
+                message += `• ${app.name} - Qty: ${app.qty}, Brand: ${app.brand}\n`;
+            });
+
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        }
+
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -410,10 +497,11 @@
             document.getElementById('orderForm').reset();
             document.querySelectorAll('.appliance-card').forEach(card => {
                 card.querySelector('input[type="checkbox"]').checked = false;
-                card.querySelector('.detail-row').style.display = 'none';
+                card.querySelector('.detail-row').classList.remove('show');
                 card.querySelector('.qty-input').value = 1;
                 card.querySelector('.brand-input').value = '';
             });
+            updateSummary();
         });
 
         function displayOrders(orders) {
@@ -467,7 +555,7 @@
             const applianceSheets = {};
             
             appliances.forEach(app => {
-                applianceSheets[app] = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Qty', 'Brand']];
+                applianceSheets[app.name] = [['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Qty', 'Brand']];
             });
 
             orders.forEach(order => {
@@ -503,9 +591,9 @@
             XLSX.utils.book_append_sheet(wb, allOrdersSheet, 'All Orders');
 
             appliances.forEach(app => {
-                if (applianceSheets[app].length > 1) {
-                    const sheet = XLSX.utils.aoa_to_sheet(applianceSheets[app]);
-                    const sheetName = app.length > 30 ? app.substring(0, 30) : app;
+                if (applianceSheets[app.name].length > 1) {
+                    const sheet = XLSX.utils.aoa_to_sheet(applianceSheets[app.name]);
+                    const sheetName = app.name.length > 30 ? app.name.substring(0, 30) : app.name;
                     XLSX.utils.book_append_sheet(wb, sheet, sheetName);
                 }
             });
