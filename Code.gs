@@ -10,10 +10,10 @@
 // 
 // SPREADSHEET ID: 1puZrDZxNP8X2hd_vwicvmyX3AYNdDuQA3saRuUMGEvo
 
-const SPREADSHEET_ID = '1puZrDZxNP8X2hd_vwicvmyX3AYNdDuQA3saRuUMGEvo';
+const SHEET_NAME = 'Meridian Park Bulk Order Form';
 
 function doPost(e) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Orders') || SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet('Orders');
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME) || SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet(SHEET_NAME);
   
   if (!sheet.getLastRow()) {
     sheet.appendRow(['Date', 'Time', 'Name', 'Flat Number', 'Mobile', 'Procurement Date', 'Appliance', 'Qty', 'Brand']);
@@ -34,7 +34,7 @@ function doPost(e) {
 }
 
 function doGet() {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Orders');
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
   
   if (!sheet) {
     return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
